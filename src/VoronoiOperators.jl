@@ -30,7 +30,7 @@ method_name(a) = method_name(typeof(a))
 include("utils.jl")
 include("lsq_utils.jl")
 
-abstract type VoronoiOperator end
+abstract type VoronoiOperator <: Function end
 abstract type LinearVoronoiOperator <: VoronoiOperator end
 abstract type NonLinearVoronoiOperator <: VoronoiOperator end
 
