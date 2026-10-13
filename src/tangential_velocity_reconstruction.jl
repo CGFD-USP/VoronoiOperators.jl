@@ -23,7 +23,7 @@ function compute_weightsOnEdge_trisk!(edgesOnEdge::AbstractVector{<:SmallVector{
         inds_e_c1 = edgesOnCell[c1]
         this_e_i = findfirst(isequal(e), inds_e_c1)::Int
         inds_e_c1_shifted = circshift(inds_e_c1, -this_e_i)
-        vertices_c1_shifted = circshift(verticesOnCell[c1], -this_e_i)
+        vertices_c1_shifted = circshift(verticesOnCell[c1], 1 - this_e_i)
         nEdges_c1 = nEdgesOnCell[c1]
         inv_a_c1 = inv(areaCell[c1])
 
@@ -40,7 +40,7 @@ function compute_weightsOnEdge_trisk!(edgesOnEdge::AbstractVector{<:SmallVector{
         inds_e_c2 = edgesOnCell[c2]
         this_e_i = findfirst(isequal(e), inds_e_c2)::Int
         inds_e_c2_shifted = circshift(inds_e_c2, -this_e_i)
-        vertices_c2_shifted = circshift(verticesOnCell[c2], -this_e_i)
+        vertices_c2_shifted = circshift(verticesOnCell[c2], 1 - this_e_i)
         nEdges_c2 = nEdgesOnCell[c2]
         inv_a_c2 = inv(areaCell[c2])
 
