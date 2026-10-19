@@ -8,10 +8,12 @@ _capacity(a) = _capacity(typeof(a))
 
     M = Matrix{TF}(undef, nElem, 3)
 
+    L = sum(eli -> norm(elements_pos[eli] - bpos), Base.OneTo(nElem)) / nElem
+
     for eli in Base.OneTo(nElem)
         M[eli, 1] = oneunit(TF)
         elpos = elements_pos[eli]
-        dpos = elpos - bpos
+        dpos = (elpos - bpos) / L
         M[eli, 2] = dpos ⋅ 𝐢
         M[eli, 3] = dpos ⋅ 𝐣
     end
@@ -32,10 +34,12 @@ end
 
     M = Matrix{TF}(undef, nElem, 6)
 
+    L = sum(eli -> norm(elements_pos[eli] - bpos), Base.OneTo(nElem)) / nElem
+
     for eli in Base.OneTo(nElem)
         M[eli, 1] = oneunit(TF)
         elpos = elements_pos[eli]
-        dpos = elpos - bpos
+        dpos = (elpos - bpos) / L
         xterm = dpos ⋅ 𝐢
         yterm = dpos ⋅ 𝐣
         M[eli, 2] = xterm
