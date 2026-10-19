@@ -209,11 +209,15 @@ end
 
     M = Matrix{TF}(undef, nElem, 6)
 
+    # offsets in units of their mean length, so that the regularisation below does not depend on
+    # the mesh spacing (the constant part of the fit, which gives the weights, is unchanged)
+    L = sum(eli -> norm(elements_pos[eli] - bpos), Base.OneTo(nElem)) / nElem
+
     for eli in Base.OneTo(nElem)
         normal = elements_normal[eli]
         nx = normal ⋅ 𝐢
         ny = normal ⋅ 𝐣
-        dp = elements_pos[eli] - bpos
+        dp = (elements_pos[eli] - bpos) / L
         dpx = dp ⋅ 𝐢
         dpy = dp ⋅ 𝐣
         M[eli, 1] = nx
