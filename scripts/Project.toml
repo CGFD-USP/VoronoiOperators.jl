@@ -1,0 +1,13 @@
+[deps]
+Comonicon = "863f3e99-da2a-4334-8734-de3dacbe5542"
+NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
+TensorsLite = "1a1b94bd-d244-45e0-965a-8acfeb92b70f"
+TensorsLiteGeometry = "f9cc0174-84f8-4243-a119-6cf6c33db921"
+VoronoiMeshes = "978c199f-fe38-4011-9fe6-317bc1cdd350"
+VoronoiOperators = "28deb5e7-6037-4488-9d39-5419413b6983"
+
+[sources]
+TensorsLite = {rev = "main", url = "https://github.com/favba/TensorsLite.jl"}
+TensorsLiteGeometry = {rev = "main", url = "https://github.com/CGFD-USP/TensorsLiteGeometry.jl"}
+VoronoiMeshes = {rev = "main", url = "https://github.com/CGFD-USP/VoronoiMeshes.jl"}
+VoronoiOperators = {path = ".."}
