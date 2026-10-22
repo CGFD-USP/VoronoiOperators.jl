@@ -752,6 +752,15 @@ end
         ds.attrib["cell_velocity_reconstruction_method"] == "LSq2" &&
         ds.attrib["vertex_velocity_reconstruction_method"] == "Perot"
     end
+
+    VoronoiMeshes.save(oname, EdgeMidpointReconstructionLSq2(mesh_distorted))
+    @test NCDataset(oname) do ds
+        ds.attrib["tangential_velocity_reconstruction_method"] == "Peixoto" &&
+        ds.attrib["cell_velocity_reconstruction_method"] == "LSq2" &&
+        ds.attrib["vertex_velocity_reconstruction_method"] == "Perot" &&
+        ds.attrib["edge_midpoint_reconstruction_method"] == "LSq2"
+    end
+
     Base.Filesystem.rm(oname)
 end
 

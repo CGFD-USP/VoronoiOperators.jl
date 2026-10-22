@@ -40,4 +40,13 @@ function save_to_netcdf!(ds::NCDataset, velRecon::VertexVelocityReconstruction{T
     return
 end
 
+function save_to_netcdf!(ds::NCDataset, edgeMidRecon::EdgeMidpointReconstruction)
+
+    write_field_to_netcdf!(ds, edgeMidRecon.weights, "coeffs_edge_midpoint_reconstruct", ("trueMaxEdgesP1", "nEdges"), ["units" => "-", "long_name" => "Weights used in reconstruction of a flux at the edge midpoint."])
+
+    ds.attrib["edge_midpoint_reconstruction_method"] = method_name(edgeMidRecon)
+
+    return
+end
+
 end

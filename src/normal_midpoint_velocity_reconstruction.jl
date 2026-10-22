@@ -162,19 +162,3 @@ EdgeMidpointReconstructionLSq2(m::AbstractVoronoiMesh) =
 
 method_name(::EdgeMidpointReconstructionLSq2) = "LSq2"
 
-# function save_tangent_reconstruction(mesh::AbstractVoronoiMesh, method::String, output::String)
-#     if method == "Thuburn"
-#         VoronoiMeshes.save(output, EdgeMidpointReconstructionThuburn(mesh))
-#     elseif method == "Peixoto"
-#         VoronoiMeshes.save(output, EdgeMidpointReconstructionPeixoto(mesh))
-#     elseif method == "PeixotoOld"
-#         VoronoiMeshes.save(output, EdgeMidpointReconstructionPeixotoOld(mesh))
-#     elseif method == "LSq1"
-#         VoronoiMeshes.save(output, EdgeMidpointReconstructionVelRecon(mesh, CellVelocityReconstructionLSq1(mesh)))
-#     elseif method == "LSq2"
-#         VoronoiMeshes.save(output, EdgeMidpointReconstructionVelRecon(mesh, CellVelocityReconstructionLSq2(mesh)))
-#     else
-#         throw(error(string(method, " is not a valid tangential velocity reconstruction method")))
-#     end
-# end
-
