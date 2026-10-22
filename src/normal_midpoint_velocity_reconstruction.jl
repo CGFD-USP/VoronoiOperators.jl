@@ -162,3 +162,11 @@ EdgeMidpointReconstructionLSq2(m::AbstractVoronoiMesh) =
 
 method_name(::EdgeMidpointReconstructionLSq2) = "LSq2"
 
+function save_edge_midpoint_reconstruction(mesh::AbstractVoronoiMesh, method::String, output::String)
+    if method == "LSq2"
+        VoronoiMeshes.save(output, EdgeMidpointReconstructionLSq2(mesh))
+    else
+        throw(error(string(method, " is not a valid edge midpoint flux reconstruction method")))
+    end
+end
+

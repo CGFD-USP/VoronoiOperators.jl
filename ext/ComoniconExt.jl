@@ -70,6 +70,7 @@ Create and save new Voronoi horizontal operators to a NetCDF file.
 - `-t, --tangent_reconstruction`: Edge tangential velocity reconstruction method. Available options: "Peixoto", "PeixotoOld", "LSq1", "LSq2", and "Thuburn". Default is "Thuburn".
 - `-c, --cell_reconstruction`: Cell velocity reconstruction method. Available options: "Perot", "PerotOld", "LSq1", and "LSq2". No cell velocity reconstruction method is written to file by default.
 - `-v, --vertex_reconstruction`: Vertex velocity reconstruction method. Available options: "Perot", "LSq1", and "LSq2". No vertex velocity reconstruction method is written to file by default.
+- `-e, --edge_midpoint_reconstruction`: Edge midpoint flux reconstruction method. Available options: "LSq2". No edge midpoint flux reconstruction method is written to file by default.
 - `-a, --areas`: Include area data. Available options: "geometric", where the true geometrical areas are computed, or "mimetic", where areas are computed in a suitable manner to the TRiSK method. No area data is written to file by default.
 - `-s, --start_time`: Simulation start time. Should be the same as in "config \U0332 start \U0332 time" from namelist.init \U0332 atmosphere. Default value of "0000-01-01 \U0332 00:00:00".
 """
@@ -77,6 +78,7 @@ Comonicon.@main function create_voronoi_operator(grid::String, output::String;
                                                  tangent_reconstruction::String="Thuburn",
                                                  cell_reconstruction::String="",
                                                  vertex_reconstruction::String="",
+                                                 edge_midpoint_reconstruction::String="",
                                                  areas::String="",
                                                  start_time::String="0000-01-01_00:00:00")
     @info string("Reading ", grid," file")
@@ -91,6 +93,10 @@ Comonicon.@main function create_voronoi_operator(grid::String, output::String;
         @info "Creating vertex velocity reconstruction weights"
         VoronoiOperators.save_vertex_reconstruction(mesh, vertex_reconstruction, output)
     end
+    if edge_midpoint_reconstruction != ""
+        @info "Creating edge midpoint flux reconstruction weights"
+        VoronoiOperators.save_edge_midpoint_reconstruction(mesh, edge_midpoint_reconstruction, output)
+    end
     if areas != ""
         @info "Creating area data"
         write_custom_areas(output, mesh, areas)
@@ -100,8 +106,8 @@ Comonicon.@main function create_voronoi_operator(grid::String, output::String;
     return 0
 end
 
-precompile(Tuple{typeof(Core.kwcall), NamedTuple{(:tangent_reconstruction, :cell_reconstruction, :vertex_reconstruction, :areas, :start_time), Tuple{String, String, String, String, String}}, typeof(create_voronoi_operator), String, String})
-precompile(create_voronoi_operator, (String, String, @NamedTuple{tangent_reconstruction::String, cell_reconstruction::String, vertex_reconstruction::String, areas::String, start_time::String}))
+precompile(Tuple{typeof(Core.kwcall), NamedTuple{(:tangent_reconstruction, :cell_reconstruction, :edge_midpoint_reconstruction, :vertex_reconstruction, :areas, :start_time), Tuple{String, String, String, String, String, String}}, typeof(create_voronoi_operator), String, String})
+precompile(create_voronoi_operator, (String, String, @NamedTuple{tangent_reconstruction::String, cell_reconstruction::String, vertex_reconstruction::String, edge_midpoint_reconstruction::String, areas::String, start_time::String}))
 
 precompile(Tuple{typeof(command_main), Vector{String}})
 precompile(Tuple{typeof(command_main)})
