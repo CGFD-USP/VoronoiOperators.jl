@@ -20,6 +20,7 @@ export VertexKineticEnergyReconstruction, VertexKineticEnergyVelRecon, VertexKin
 export GradientAtEdge, DivAtCell, CurlAtVertex, CurlAtEdge, CurlAtEdgeFromVertex
 export CellBoxFilter
 export TangentialVelocityReconstruction, TangentialVelocityReconstructionThuburn, TangentialVelocityReconstructionPeixoto, TangentialVelocityReconstructionVelRecon
+export EdgeMidpointReconstruction, EdgeMidpointReconstructionLSq2
 export method_name
 
 export DivCellScalarU
@@ -84,6 +85,7 @@ include("kinetic_energy_reconstruction.jl")
 include("differential_operators.jl")
 include("filtering_operators.jl")
 include("tangential_velocity_reconstruction.jl")
+include("normal_midpoint_velocity_reconstruction.jl")
 
 include("nonlinear_operators.jl")
 

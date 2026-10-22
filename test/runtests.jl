@@ -226,6 +226,26 @@ const cell_kinetic_energy = (cell_Vec_field .⋅ cell_Vec_field) ./ 2
 const vertex_Vec_field = axis .× mesh_spherical.vertices.position
 const vertex_kinetic_energy = (vertex_Vec_field .⋅ vertex_Vec_field) ./ 2
 
+function compute_edge_midpoint_normal_tangent(mesh::AbstractVoronoiMesh{true})
+    n = similar(mesh.edges.position)
+    t = similar(mesh.edges.position)
+    R = mesh.sphere_radius
+    for e in Base.OneTo(mesh.edges.n)
+        e_mid_pos = mesh.edges.midpoint[e] / R
+        v1, v2 = mesh.edges.vertices[e]
+        te = normalize((mesh.vertices.position[v2] / R) - (mesh.vertices.position[v1] / R))
+        n[e] = normalize(te × e_mid_pos)
+        t[e] = te
+    end
+    return n, t
+end
+
+nt = compute_edge_midpoint_normal_tangent(mesh_spherical)
+const edge_midpoint_normal = nt[1]
+const edge_midpoint_tangent = nt[2]
+const edge_midpoint_Vec_field = (axis .× mesh_spherical.edges.midpoint) .⋅ edge_midpoint_normal
+const edge_midpoint_tVec_field = (axis .× mesh_spherical.edges.midpoint) .⋅ edge_midpoint_tangent
+
 @testset "(Cell / Vertex) (Velocity / Kinetic Energy) Reconstruction" begin
     for mesh in (mesh_iso, mesh_distorted)
         ue1D = dot.(mesh.edges.normal, (v,))
@@ -505,6 +525,50 @@ end
     @test all(map((x, y) -> isapprox(x, y; atol = 0.1), ut1D, tvlsq2(ue1D)))
 end
 
+const A = 20*rand(Ten2Dxy)
+linear_v_field(𝐱) = v + A⋅𝐱 
+
+function edges_far_from_boundary(mesh)
+    L = maximum(mesh.edges.length)
+    stripe = 5*L
+    xp = mesh.x_period
+    yp = mesh.y_period
+    func = function (i)
+        ep = @inbounds(mesh.edges.position[i])
+        return (stripe <= ep.x <= xp - stripe) & (stripe <= ep.y <= yp - stripe)
+    end
+    return filter(func, 1:mesh.edges.n)
+end
+
+@testset "Edge Midpoint Normal Velocity Reconstruction" begin
+    for mesh in (mesh_iso, mesh_distorted)
+        e_field = dot.(v, mesh.edges.normal)
+        e_mid_field = dot.(v, mesh.edges.normal)
+
+        emnR = EdgeMidpointReconstructionLSq2(mesh)
+
+        if mesh == mesh_iso
+            @test all(w -> w[1] ≈ 1, emnR.weights)
+            @test all(w -> abs(sum(Iterators.drop(w,1))) <= 1e-13, emnR.weights)
+        end
+
+        @test all(map((x, y) -> isapprox(x, y; atol = 1e-14, rtol=1e-14), e_mid_field, emnR(e_field)))
+
+        e_field = dot.(linear_v_field.(mesh.edges.position), mesh.edges.normal)
+        e_mid_field = dot.(linear_v_field.(mesh.edges.midpoint), mesh.edges.normal)
+
+        mask = edges_far_from_boundary(mesh)
+
+        @test all(map((x, y) -> isapprox(x, y; atol = 1e-14, rtol=1e-14), @view(e_mid_field[mask]), @view(emnR(e_field)[mask])))
+    end
+
+    emnR = EdgeMidpointReconstructionLSq2(mesh_spherical)
+
+    @test all(map((x, y) -> isapprox(x, y; rtol=1e-3), edge_midpoint_Vec_field, emnR(edge_Vec_field)))
+
+    @test all(map((x, y) -> isapprox(x, y; rtol=1e-3, atol=2e-13), edge_midpoint_tVec_field, emnR(edge_tVec_field)))
+end
+
 # v =  𝐤 × 𝐫 (where 𝐫 = x𝐢 + y𝐣)
 v_field_for_curl(𝐱) = 𝐤 × 𝐱
 # ∇ × v = 2𝐤
@@ -670,19 +734,19 @@ end
 @testset "Save operators to NetCDF" begin
 
     oname = "custom_operators.nc"
-    save(oname, TangentialVelocityReconstructionPeixoto(mesh_distorted))
+    VoronoiMeshes.save(oname, TangentialVelocityReconstructionPeixoto(mesh_distorted))
 
     @test NCDataset(oname) do ds
         ds.attrib["tangential_velocity_reconstruction_method"] == "Peixoto"
     end
 
-    save(oname, CellVelocityReconstructionLSq2(mesh_distorted))
+    VoronoiMeshes.save(oname, CellVelocityReconstructionLSq2(mesh_distorted))
     @test NCDataset(oname) do ds
         ds.attrib["tangential_velocity_reconstruction_method"] == "Peixoto" &&
         ds.attrib["cell_velocity_reconstruction_method"] == "LSq2"
     end
 
-    save(oname, VertexVelocityReconstructionPerot(mesh_distorted))
+    VoronoiMeshes.save(oname, VertexVelocityReconstructionPerot(mesh_distorted))
     @test NCDataset(oname) do ds
         ds.attrib["tangential_velocity_reconstruction_method"] == "Peixoto" &&
         ds.attrib["cell_velocity_reconstruction_method"] == "LSq2" &&

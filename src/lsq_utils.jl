@@ -303,3 +303,56 @@ function compute_weights_vec_lsq2_spherical!(w::AbstractVector{TV}, basePos, ele
 
     return w
 end
+
+@inline function compute_grad_weights_vec_lsq2(bpos::VecND{TF}, elements_pos, elements_normal, 𝐢::Vec, 𝐣::Vec, L0 = zero(TF)) where {TF}
+    @inbounds begin
+    nElem = length(elements_normal)
+
+    M = Matrix{TF}(undef, nElem, 6)
+
+    # offsets in units of their mean length, so that the regularisation below does not depend on
+    # the mesh spacing (the constant part of the fit, which gives the weights, is unchanged)
+    L = if iszero(L0)
+            sum(eli -> norm(elements_pos[eli] - bpos), Base.OneTo(nElem)) / nElem
+        else
+            L0
+        end
+
+    for eli in Base.OneTo(nElem)
+        normal = elements_normal[eli]
+        nx = normal ⋅ 𝐢
+        ny = normal ⋅ 𝐣
+        dp = (elements_pos[eli] - bpos) / L
+        dpx = dp ⋅ 𝐢
+        dpy = dp ⋅ 𝐣
+        M[eli, 1] = nx
+        M[eli, 2] = ny
+        M[eli, 3] = nx*dpx
+        M[eli, 4] = ny*dpx
+        M[eli, 5] = nx*dpy
+        M[eli, 6] = ny*dpy
+    end
+
+    MpM = Hermitian(M'*M)
+    cn = cond(MpM)
+    if (cn > 5e6)
+        λ = opnorm(MpM) / 5e6
+        for i in 3:6
+            MpM[i, i] += λ
+        end
+    end
+
+    P = LinearAlgebra.inv!(cholesky!(MpM))*M'
+
+    iL = inv(L)
+
+    N = _capacity(elements_normal)
+    wvec = map(x -> @inbounds(
+                              iL*P[3, x]*(𝐢⊗𝐢) + iL*P[4, x]*(𝐢⊗𝐣) +
+                              iL*P[5, x]*(𝐣⊗𝐢) + iL*P[6, x]*(𝐣⊗𝐣)
+                          ), SmallVector{N}(Base.OneTo(nElem)))
+    end #inbounds
+
+    return wvec
+end
+
