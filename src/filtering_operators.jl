@@ -228,8 +228,8 @@ end
 function CellBoxFilter(mesh::AbstractVoronoiMesh{false}, variable_resolution::Bool = false, ratio = 2.0)
     if !variable_resolution
         #Δ = 2 * mesh.attributes[:dc]::Float64
-        Δ = 2 * (sum(mesh.edges.lengthDual) / mesh.edges.n)
-        return CellBoxFilter(mesh, Δ)
+        Δc = 2 * (sum(mesh.edges.lengthDual) / mesh.edges.n)
+        return CellBoxFilter(mesh, Δc)
     else
         f = let dcEdge = mesh.edges.lengthDual, edgesOnCell = mesh.cells.edges
             @inline function (c)
