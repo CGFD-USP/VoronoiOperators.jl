@@ -128,6 +128,10 @@ function compute_tangential_weightsOnEdge_velRecon_periodic!(
             ie = @inbounds push(ie, ip2[i])
         end
 
+        #The last element is the term associated with the current edge `e`
+        we = @inbounds push(we, ((wc1[1] ⋅ te) + (wc2[1] ⋅ te))  / 2)
+        ie = @inbounds push(ie, e)
+
         wdata[e] = fixedvector(we)
         edgesOnEdge[e] = ie
     end
@@ -151,7 +155,7 @@ function compute_tangential_weightsOnEdge_velRecon_spherical!(
     ) where {NE, TI, TF}
 
     wdata = weightsOnEdge.data
-    
+
     @parallel for e in eachindex(verticesOnEdge)
     @inbounds begin
         c1, c2 = cellsOnEdge[e]
@@ -197,6 +201,10 @@ function compute_tangential_weightsOnEdge_velRecon_spherical!(
             ie = @inbounds push(ie, ip2[i])
         end
 
+        #The last element is the term associated with the current edge `e`
+        we = @inbounds push(we, ((wc1[1] ⋅ te1) + (wc2[1] ⋅ te2))  / 2)
+        ie = @inbounds push(ie, e)
+
         wdata[e] = fixedvector(we)
         edgesOnEdge[e] = ie
     end
@@ -214,7 +222,7 @@ function compute_tangential_weightsOnEdge_velRecon!(cells::Cells{true}, vertices
 end
 
 function compute_tangential_weightsOnEdge_velRecon(cells::Cells, vertices::Vertices, edges::Edges, velRecon::CellVelocityReconstruction)
-    nEdgesOnEdge = maximum(x->(x[1] + x[2] - 2), ((a,inds) -> @inbounds((a[inds[1]], a[inds[2]]))).((cells.nEdges,), edges.cells))
+    nEdgesOnEdge = maximum(x->(x[1] + x[2] - 1), ((a,inds) -> @inbounds((a[inds[1]], a[inds[2]]))).((cells.nEdges,), edges.cells))
     indices =SmVecArray{nEdgesOnEdge, integer_type(edges)}(edges.n)
     weights =SmallVectorArray(Vector{FixedVector{nEdgesOnEdge, float_type(cells)}}(undef, edges.n), indices.length)
     return compute_tangential_weightsOnEdge_velRecon!(cells, vertices, edges, velRecon, indices, weights)
